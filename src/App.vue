@@ -7,8 +7,12 @@
           <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite playlist</div>
           <div class="md-layout-item nji-playlist-input">
             <md-field>
-              <label class="center-label">Playlist ID</label>
+              <label class="center-label">Playlist 1 ID</label>
               <md-input v-model="playlistId"></md-input>
+            </md-field>
+            <md-field>
+              <label class="center-label">Playlist 2 ID (optional)</label>
+              <md-input v-model="playlistId2"></md-input>
             </md-field>
             <div class="md-layout md-gutter">
               <div class="md-layout-item">
@@ -17,6 +21,7 @@
                   <md-select v-model="xAxis" name="xAxis" id="xAxis">
                     <md-option value="valence">Valence</md-option>
                     <md-option value="energy">Energy</md-option>
+                    <md-option value="danceability">Danceability</md-option>
                     <md-option value="popularity">Popularity</md-option>
                     <md-option value="speechiness">Speechiness</md-option>
                     <md-option value="acousticness">Acousticness</md-option>
@@ -32,6 +37,7 @@
                   <md-select v-model="yAxis" name="yAxis" id="yAxis">
                     <md-option value="valence">Valence</md-option>
                     <md-option value="energy">Energy</md-option>
+                    <md-option value="danceability">Danceability</md-option>
                     <md-option value="popularity">Popularity</md-option>
                     <md-option value="speechiness">Speechiness</md-option>
                     <md-option value="acousticness">Acousticness</md-option>
@@ -113,7 +119,7 @@
       tooltips: {
         callbacks: {
           label: function(tooltipItem, data) {
-            let label = data.labels[tooltipItem.index];
+            let label = data.datasets[tooltipItem.datasetIndex].labels[tooltipItem.index];
             return label;
           }
         }
@@ -147,6 +153,7 @@
         xAxis: 'valence',
         yAxis: 'energy',
         playlistId: '',
+        playlistId2: '',
         options: getOptions('','')
       }
     },
@@ -160,17 +167,29 @@
             labels: labels,
             datasets: [{
               label: response.data.name,
+              labels: labels,
               data: values,
               borderWidth: 1,
-              backgroundColor: '#000000'
+              backgroundColor: '#9a989f'
             }]
           };
+          if (this.playlistId2 !== '') {
+            let response2 = await axios.get(
+              "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + this.playlistId2);
+            let [labels2, values2] = createScatterArrays(response2.data.tracks, this.xAxis, this.yAxis);
+            chartData.datasets.push({
+              label: response2.data.name,
+              labels: labels2,
+              data: values2,
+              borderWidth: 1,
+              backgroundColor: '#ff8b46'
+            });
+          }
           this.options = getOptions(this.xAxis, this.yAxis);
           this.scatterData = chartData;
           this.showChart = true;
         }
         catch (e) {
-          console.log(e);
           this.hello = "Problem finding playlist data"
         }
       },
