@@ -116,6 +116,7 @@
         this.showChart = false;
         this.showSpinner = true;
         try {
+          // to make functional
           let response = await axios.get(
             "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + options.playlistId);
           let [labels, values] = createScatterArrays(response.data.tracks, options.xAxis, options.yAxis);
