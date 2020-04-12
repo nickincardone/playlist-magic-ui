@@ -134,42 +134,8 @@
     } else {
       option.scales.yAxes[0].ticks.max = 1;
     }
+    return option;
   }
-
-  let options = {
-    scales: {
-      xAxes: [{
-        display: true,
-        ticks: {
-          min: 0,
-          max: 1
-        },
-        scaleLabel: {
-          display: true,
-          labelString: 'Valence'
-        }
-      }],
-      yAxes: [{
-        display: true,
-        ticks: {
-          min: 0,
-          max: 1
-        },
-        scaleLabel: {
-          display: true,
-          labelString: 'Energy'
-        }
-      }]
-    },
-    tooltips: {
-      callbacks: {
-        label: function(tooltipItem, data) {
-          let label = data.labels[tooltipItem.index];
-          return label;
-        }
-      }
-    }
-  };
 
   export default {
     name: 'App',
@@ -181,7 +147,7 @@
         xAxis: 'valence',
         yAxis: 'energy',
         playlistId: '',
-        options: options
+        options: getOptions('','')
       }
     },
     methods: {
@@ -189,14 +155,14 @@
         try {
           let response = await axios.get(
             "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + this.playlistId);
-          let [labels, values] = createScatterArrays(response.data, this.xAxis, this.yAxis);
+          let [labels, values] = createScatterArrays(response.data.tracks, this.xAxis, this.yAxis);
           let chartData = {
             labels: labels,
             datasets: [{
-              label: 'Playlist 1',
+              label: response.data.name,
               data: values,
               borderWidth: 1,
-              backgroundColor: 'rgba(255, 99, 132, 0.2)'
+              backgroundColor: '#000000'
             }]
           };
           this.options = getOptions(this.xAxis, this.yAxis);
