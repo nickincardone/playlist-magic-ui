@@ -115,6 +115,7 @@
       createGraph: async function (options) {
         this.showChart = false;
         this.showSpinner = true;
+        this.errorMessage = '';
         try {
           // to make functional
           let response = await axios.get(
