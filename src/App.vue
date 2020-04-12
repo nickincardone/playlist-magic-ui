@@ -4,56 +4,13 @@
       <div class="md-layout-item md-small-size-90 md-medium-size-75 md-large-size-50 nji-content-card">
         <div class="md-layout nji-column md-gutter md-alignment-center-center">
           <div class="md-layout-item md-display-3 nji-title">Playlist Magic</div>
-          <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite playlist</div>
-          <div class="md-layout-item nji-playlist-input">
-            <md-field>
-              <label class="center-label">Playlist 1 ID</label>
-              <md-input v-model="playlistId"></md-input>
-            </md-field>
-            <md-field>
-              <label class="center-label">Playlist 2 ID (optional)</label>
-              <md-input v-model="playlistId2"></md-input>
-            </md-field>
-            <div class="md-layout md-gutter">
-              <div class="md-layout-item">
-                <md-field>
-                  <label for="xAxis">X Axis</label>
-                  <md-select v-model="xAxis" name="xAxis" id="xAxis">
-                    <md-option value="valence">Valence</md-option>
-                    <md-option value="energy">Energy</md-option>
-                    <md-option value="danceability">Danceability</md-option>
-                    <md-option value="popularity">Popularity</md-option>
-                    <md-option value="speechiness">Speechiness</md-option>
-                    <md-option value="acousticness">Acousticness</md-option>
-                    <md-option value="instrumentalness">Instrumentalness</md-option>
-                    <md-option value="liveness">Liveness</md-option>
-                    <md-option value="tempo">Tempo</md-option>
-                  </md-select>
-                </md-field>
-              </div>
-              <div class="md-layout-item">
-                <md-field>
-                  <label for="yAxis">Y Axis</label>
-                  <md-select v-model="yAxis" name="yAxis" id="yAxis">
-                    <md-option value="valence">Valence</md-option>
-                    <md-option value="energy">Energy</md-option>
-                    <md-option value="danceability">Danceability</md-option>
-                    <md-option value="popularity">Popularity</md-option>
-                    <md-option value="speechiness">Speechiness</md-option>
-                    <md-option value="acousticness">Acousticness</md-option>
-                    <md-option value="instrumentalness">Instrumentalness</md-option>
-                    <md-option value="liveness">Liveness</md-option>
-                    <md-option value="tempo">Tempo</md-option>
-                  </md-select>
-                </md-field>
-              </div>
-            </div>
-
-            <md-button class="md-raised" v-on:click="blah">Analyze</md-button>
+          <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite playlist, or compare two to each other.</div>
+          <playlist-input v-on:create-graph="createGraph"/>
+          <div style="margin-top: 20px;" class="md-layout-item md-body-2 nji-subheader">
+            {{errorMessage}}
           </div>
-          <div style="margin-top: 20px;" class="md-layout-item md-body-2 nji-subheader">{{hello}}
-          </div>
-          <scatter v-if="showChart" :chart-data="scatterData" :options="options"/>
+          <md-progress-spinner v-if="showSpinner" :md-diameter="100" :md-stroke="10" md-mode="indeterminate" style="margin: 40px;"></md-progress-spinner>
+          <scatter v-if="showChart" :chart-data="scatterData" :options="chartOptions"/>
         </div>
       </div>
     </div>
@@ -63,6 +20,7 @@
 <script>
   import axios from 'axios';
   import Scatter from './components/Scatter'
+  import Input from './components/Input';
 
   const tempData =  {
     labels: ['test'],
@@ -119,8 +77,7 @@
       tooltips: {
         callbacks: {
           label: function(tooltipItem, data) {
-            let label = data.datasets[tooltipItem.datasetIndex].labels[tooltipItem.index];
-            return label;
+            return data.datasets[tooltipItem.datasetIndex].labels[tooltipItem.index];
           }
         }
       }
@@ -147,22 +104,21 @@
     name: 'App',
     data: () => {
       return {
-        hello: '',
+        errorMessage: '',
         showChart: false,
+        showSpinner: false,
         scatterData: tempData,
-        xAxis: 'valence',
-        yAxis: 'energy',
-        playlistId: '',
-        playlistId2: '',
-        options: getOptions('','')
+        chartOptions: getOptions('','')
       }
     },
     methods: {
-      blah: async function () {
+      createGraph: async function (options) {
+        this.showChart = false;
+        this.showSpinner = true;
         try {
           let response = await axios.get(
-            "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + this.playlistId);
-          let [labels, values] = createScatterArrays(response.data.tracks, this.xAxis, this.yAxis);
+            "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + options.playlistId);
+          let [labels, values] = createScatterArrays(response.data.tracks, options.xAxis, options.yAxis);
           let chartData = {
             labels: labels,
             datasets: [{
@@ -173,10 +129,10 @@
               backgroundColor: '#9a989f'
             }]
           };
-          if (this.playlistId2 !== '') {
+          if (options.playlistId2 !== '') {
             let response2 = await axios.get(
-              "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + this.playlistId2);
-            let [labels2, values2] = createScatterArrays(response2.data.tracks, this.xAxis, this.yAxis);
+              "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + options.playlistId2);
+            let [labels2, values2] = createScatterArrays(response2.data.tracks, options.xAxis, options.yAxis);
             chartData.datasets.push({
               label: response2.data.name,
               labels: labels2,
@@ -185,17 +141,22 @@
               backgroundColor: '#ff8b46'
             });
           }
-          this.options = getOptions(this.xAxis, this.yAxis);
+          this.chartOptions = getOptions(options.xAxis, options.yAxis);
           this.scatterData = chartData;
-          this.showChart = true;
+          setTimeout(() => {
+            this.showSpinner = false;
+            this.showChart = true;
+          }, 500);
         }
         catch (e) {
-          this.hello = "Problem finding playlist data"
+          this.errorMessage = "Problem finding playlist data"
+          this.showSpinner = false;
         }
       },
     },
     components: {
-      'scatter': Scatter
+      'scatter': Scatter,
+      'playlist-input': Input
     }
   }
 </script>
@@ -229,7 +190,7 @@
 
         .nji-playlist-input {
           .md-field {
-            min-wdth: 250px;
+            min-width: 250px;
           }
 
           .center-label {
