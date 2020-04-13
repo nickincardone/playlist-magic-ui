@@ -5,7 +5,7 @@
         class="md-layout-item md-small-size-95 md-medium-size-75 md-large-size-50 nji-content-card">
         <div class="md-layout nji-column md-gutter md-alignment-center-center">
           <div class="md-layout-item md-display-3 nji-title">Playlist Magic</div>
-          <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite playlist, or
+          <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite Spotify playlist, or
             compare two to each other.
           </div>
           <playlist-input v-on:create-graph="createGraph"/>
@@ -106,6 +106,17 @@
     return option;
   }
 
+  function cleanPlaylistID(dirtyPlaylistID) {
+    const playlistIndex = dirtyPlaylistID.indexOf('playlist/');
+    if (playlistIndex === -1) {
+      return dirtyPlaylistID;
+    }
+    const questionIndex = dirtyPlaylistID.indexOf('?');
+    const startIndex = playlistIndex + 9;
+    const endIndex = questionIndex === -1 ? dirtyPlaylistID.length : questionIndex;
+    return dirtyPlaylistID.substring(startIndex, endIndex)
+  }
+
   export default {
     name: 'App',
     data: () => {
@@ -125,7 +136,7 @@
         try {
           // to make functional
           let response = await axios.get(
-            "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + options.playlistId);
+            "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + cleanPlaylistID(options.playlistId));
           let [labels, values] = createScatterArrays(response.data.tracks,
             options.xAxis,
             options.yAxis);
@@ -141,7 +152,7 @@
           };
           if (options.playlistId2 !== '') {
             let response2 = await axios.get(
-              "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + options.playlistId2);
+              "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + cleanPlaylistID(options.playlistId2));
             let [labels2, values2] = createScatterArrays(response2.data.tracks,
               options.xAxis,
               options.yAxis);

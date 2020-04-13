@@ -1,6 +1,6 @@
 <template>
   <div id="nji-playlist-input" class="md-layout-item">
-    <md-dialog :md-active.sync="showDialog">
+    <md-dialog :md-active.sync="showParamDialog">
       <md-dialog-title>Parameters Descriptions</md-dialog-title>
       <ul style="padding-right: 20px">
         <li><b>Valence</b>: A measure from 0.0 to 1.0 describing the musical positiveness conveyed by a track</li>
@@ -14,15 +14,31 @@
         <li><b>Tempo</b>: The overall estimated tempo of a track in beats per minute (BPM)</li>
       </ul>
       <md-dialog-actions>
-        <md-button class="md-primary" @click="showDialog = false">Close</md-button>
+        <md-button class="md-primary" @click="showParamDialog = false">Close</md-button>
       </md-dialog-actions>
     </md-dialog>
+    <md-dialog :md-active.sync="showHowToDialog">
+      <md-dialog-title>How to find Spotify Playlist ID</md-dialog-title>
+      <ol style="padding-right: 20px">
+        <li>Open Playlist on Spotify</li>
+        <li>Go to share</li>
+        <li>Click "Copy Spotify URI" (On mobile you can just click "Copy Link")</li>
+      </ol>
+      <md-dialog-actions>
+        <md-button class="md-primary" @click="showHowToDialog = false">Close</md-button>
+      </md-dialog-actions>
+    </md-dialog>
+    <div>
+      <a v-on:click="showHowToDialog = true">How do I find a playlist's ID?</a>
+      /
+      <a v-on:click="showParamDialog = true">What do the parameters mean?</a>
+    </div>
     <md-field>
-      <label class="center-label">Playlist 1 ID</label>
+      <label class="center-label">Playlist 1 ID or Link</label>
       <md-input v-model="options.playlistId"></md-input>
     </md-field>
     <md-field>
-      <label class="center-label">Playlist 2 ID (optional)</label>
+      <label class="center-label">Playlist 2 ID or Link (optional)</label>
       <md-input v-model="options.playlistId2"></md-input>
     </md-field>
     <div class="md-layout md-gutter">
@@ -59,7 +75,6 @@
         </md-field>
       </div>
     </div>
-    <div style="margin: 20px"><a v-on:click="showDialog = true">What do the parameters mean?</a></div>
     <md-button class="md-raised" v-on:click="$emit('create-graph', options)">Analyze</md-button>
   </div>
 </template>
@@ -69,7 +84,8 @@
     name: "Input",
     data: function () {
       return {
-        showDialog: false,
+        showParamDialog: false,
+        showHowToDialog: false,
         options: {
           xAxis: 'valence',
           yAxis: 'energy',
