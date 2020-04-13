@@ -1,15 +1,19 @@
 <template id="bblah">
   <div class="page-container nji-main">
     <div class="md-layout md-gutter md-alignment-center-center">
-      <div class="md-layout-item md-small-size-90 md-medium-size-75 md-large-size-50 nji-content-card">
+      <div
+        class="md-layout-item md-small-size-90 md-medium-size-75 md-large-size-50 nji-content-card">
         <div class="md-layout nji-column md-gutter md-alignment-center-center">
           <div class="md-layout-item md-display-3 nji-title">Playlist Magic</div>
-          <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite playlist, or compare two to each other.</div>
+          <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite playlist, or
+            compare two to each other.
+          </div>
           <playlist-input v-on:create-graph="createGraph"/>
           <div style="margin-top: 20px;" class="md-layout-item md-body-2 nji-subheader">
             {{errorMessage}}
           </div>
-          <md-progress-spinner v-if="showSpinner" :md-diameter="100" :md-stroke="10" md-mode="indeterminate" style="margin: 40px;"></md-progress-spinner>
+          <md-progress-spinner v-if="showSpinner" :md-diameter="100" :md-stroke="10"
+                               md-mode="indeterminate" style="margin: 40px;"></md-progress-spinner>
           <scatter v-if="showChart" :chart-data="scatterData" :options="chartOptions"/>
         </div>
       </div>
@@ -22,7 +26,7 @@
   import Scatter from './components/Scatter'
   import Input from './components/Input';
 
-  const tempData =  {
+  const tempData = {
     labels: ['test'],
     datasets: [{
       label: 'Scatter Dataset',
@@ -62,7 +66,7 @@
             labelString: xAxis
           }
         }],
-          yAxes: [{
+        yAxes: [{
           display: true,
           ticks: {
             min: 0,
@@ -76,7 +80,7 @@
       },
       tooltips: {
         callbacks: {
-          label: function(tooltipItem, data) {
+          label: function (tooltipItem, data) {
             return data.datasets[tooltipItem.datasetIndex].labels[tooltipItem.index];
           }
         }
@@ -108,7 +112,7 @@
         showChart: false,
         showSpinner: false,
         scatterData: tempData,
-        chartOptions: getOptions('','')
+        chartOptions: getOptions('', '')
       }
     },
     methods: {
@@ -120,7 +124,9 @@
           // to make functional
           let response = await axios.get(
             "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + options.playlistId);
-          let [labels, values] = createScatterArrays(response.data.tracks, options.xAxis, options.yAxis);
+          let [labels, values] = createScatterArrays(response.data.tracks,
+            options.xAxis,
+            options.yAxis);
           let chartData = {
             labels: labels,
             datasets: [{
@@ -134,7 +140,9 @@
           if (options.playlistId2 !== '') {
             let response2 = await axios.get(
               "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + options.playlistId2);
-            let [labels2, values2] = createScatterArrays(response2.data.tracks, options.xAxis, options.yAxis);
+            let [labels2, values2] = createScatterArrays(response2.data.tracks,
+              options.xAxis,
+              options.yAxis);
             chartData.datasets.push({
               label: response2.data.name,
               labels: labels2,
@@ -182,27 +190,15 @@
         min-height: 400px;
         min-width: 400px;
         text-align: center;
+        @media (max-width: 600px) {
+          min-width: 310px;
+        }
 
         .nji-title {
           margin: 20px;
         }
 
         .nji-subheader {
-        }
-
-        .nji-playlist-input {
-          .md-field {
-            min-width: 250px;
-          }
-
-          .center-label {
-            left: 50%;
-            transform: translateX(-50%);
-          }
-
-          input {
-            text-align: center;
-          }
         }
       }
     }

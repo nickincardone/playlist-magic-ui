@@ -1,5 +1,5 @@
 <template>
-  <div class="md-layout-item nji-playlist-input">
+  <div id="nji-playlist-input" class="md-layout-item">
     <md-dialog :md-active.sync="showDialog">
       <md-dialog-title>Parameters Descriptions</md-dialog-title>
       <ul style="padding-right: 20px">
@@ -82,5 +82,21 @@
 </script>
 
 <style lang="scss">
+  #nji-playlist-input {
+    padding: 15px;
+    
+    .md-field {
+      min-width: 250px;
+    }
 
+    .center-label {
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+    }
+
+    input {
+      text-align: center;
+    }
+  }
 </style>
