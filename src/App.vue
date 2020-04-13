@@ -2,7 +2,7 @@
   <div class="page-container nji-main">
     <div class="md-layout md-gutter md-alignment-center-center">
       <div
-        class="md-layout-item md-small-size-95 md-medium-size-75 md-large-size-50 nji-content-card">
+        class="md-layout-item md-small-size-95 md-medium-size-75 md-large-size-50 md-xlarge-size-40 nji-content-card">
         <div class="md-layout nji-column md-gutter md-alignment-center-center">
           <div class="md-layout-item md-display-3 nji-title">Playlist Magic</div>
           <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite Spotify playlist, or
