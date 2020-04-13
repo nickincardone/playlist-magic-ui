@@ -84,7 +84,7 @@
 <style lang="scss">
   #nji-playlist-input {
     padding: 15px;
-    
+
     .md-field {
       min-width: 250px;
     }

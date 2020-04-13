@@ -2,7 +2,7 @@
   <div class="page-container nji-main">
     <div class="md-layout md-gutter md-alignment-center-center">
       <div
-        class="md-layout-item md-small-size-90 md-medium-size-75 md-large-size-50 nji-content-card">
+        class="md-layout-item md-small-size-95 md-medium-size-75 md-large-size-50 nji-content-card">
         <div class="md-layout nji-column md-gutter md-alignment-center-center">
           <div class="md-layout-item md-display-3 nji-title">Playlist Magic</div>
           <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite playlist, or
@@ -13,8 +13,9 @@
             {{errorMessage}}
           </div>
           <md-progress-spinner v-if="showSpinner" :md-diameter="100" :md-stroke="10"
-                               md-mode="indeterminate" style="margin: 40px;"></md-progress-spinner>
+                               md-mode="indeterminate" style="margin: 40px;" id="spinner"></md-progress-spinner>
           <scatter v-if="showChart" :chart-data="scatterData" :options="chartOptions"/>
+          <div id="bottom-page"></div>
         </div>
       </div>
     </div>
@@ -23,8 +24,9 @@
 
 <script>
   import axios from 'axios';
-  import Scatter from './components/Scatter'
+  import Scatter from './components/Scatter';
   import Input from './components/Input';
+  import VueScrollTo from 'vue-scrollto';
 
   const tempData = {
     labels: ['test'],
@@ -156,10 +158,13 @@
           setTimeout(() => {
             this.showSpinner = false;
             this.showChart = true;
+            setTimeout(() => {
+              VueScrollTo.scrollTo('#bottom-page', 500);
+            }, 500);
           }, 500);
         }
         catch (e) {
-          this.errorMessage = "Problem finding playlist data"
+          this.errorMessage = "Problem finding playlist data";
           this.showSpinner = false;
         }
       },
@@ -175,7 +180,7 @@
   .nji-main {
     height: fit-content;
     background-color: #1f1f1f;
-    padding: 20px;
+    padding: 10px;
 
     .nji-column {
       flex-direction: column;
