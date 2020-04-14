@@ -1,8 +1,8 @@
-import { mixins, Scatter } from 'vue-chartjs'
+import { Bar, mixins } from 'vue-chartjs'
 const { reactiveProp } = mixins;
 
 export default {
-  extends: Scatter,
+  extends: Bar,
   mixins: [reactiveProp],
   props: ['options'],
   mounted () {

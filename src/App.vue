@@ -8,13 +8,14 @@
           <div class="md-layout-item md-body-2 nji-subheader">Analyze your favorite Spotify playlist, or
             compare two to each other.
           </div>
-          <playlist-input v-on:create-graph="createGraph"/>
+          <playlist-input v-on:create-graph="createScatterGraph"/>
           <div style="margin-top: 20px;" class="md-layout-item md-body-2 nji-subheader">
             {{errorMessage}}
           </div>
           <md-progress-spinner v-if="showSpinner" :md-diameter="100" :md-stroke="10"
                                md-mode="indeterminate" style="margin: 40px;" id="spinner"></md-progress-spinner>
           <scatter v-if="showChart" :chart-data="scatterData" :options="chartOptions"/>
+          <bar v-if="showChart" :chart-data="barData" :options="barOptions"/>
           <div id="bottom-page"></div>
         </div>
       </div>
@@ -27,6 +28,7 @@
   import Scatter from './components/Scatter';
   import Input from './components/Input';
   import VueScrollTo from 'vue-scrollto';
+  import Bar from './components/Bar';
 
   const tempData = {
     labels: ['test'],
@@ -38,6 +40,70 @@
       }]
     }]
   };
+
+  const barData = {
+    labels: [1990, 2000, 2005],
+    datasets: [
+      {
+        label: 'Data One',
+        backgroundColor: '#f87979',
+        data: [40,10, 20]
+      },
+      {
+        label: 'Data two',
+        backgroundColor: '#f80979',
+        data: [14,23, 15]
+      }
+    ]
+  };
+
+  function createBarChartData(playlist1, playlist2) {
+    const genres1 = playlist1.genres;
+    const labels = [];
+    const data1 = [];
+    let genresArray = Object.entries(genres1);
+    genresArray.sort((a,b) => b[1] - a[1]);
+    genresArray = genresArray.splice(0,playlist2 ? 8 : 12);
+    genresArray.forEach((genre) => {
+      labels.push(genre[0]);
+      data1.push(genre[1]);
+    });
+
+    const chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: playlist1.name,
+          backgroundColor: '#f87979',
+          data: data1
+        }
+      ]
+    };
+
+    if (!playlist2) return chartData;
+    const genres2 = playlist2.genres;
+
+    const data2 = [];
+    labels.forEach((label) => {
+      data2.push(genres2[label] ? genres2[label] : 0);
+    });
+    let genresArray2 = Object.entries(genres2);
+    genresArray2.sort((a,b) => b[1] - a[1]);
+    genresArray2 = genresArray2.splice(0,8);
+    genresArray2.forEach((genre) => {
+      if (labels.indexOf(genre[0]) !== -1) return;
+      labels.push(genre[0]);
+      data1.push(genres1[genre[0]] ? genres1[genre[0]] : 0);
+      data2.push(genre[1]);
+    });
+
+    chartData.datasets.push({
+      label: playlist2.name,
+      backgroundColor: '#f80979',
+      data: data2
+    });
+    return chartData;
+  }
 
   function createScatterArrays(arr, xAxis, yAxis) {
     const labels = [];
@@ -54,7 +120,7 @@
     return [labels, data];
   }
 
-  function getOptions(xAxis, yAxis) {
+  function getScatterOptions(xAxis, yAxis) {
     let option = {
       scales: {
         xAxes: [{
@@ -106,6 +172,25 @@
     return option;
   }
 
+  function getBarOptions() {
+    return  {
+      scales: {
+        yAxes: [{
+          display: true,
+          ticks: {
+            min: 0
+          },
+          scaleLabel: {
+            display: true,
+            labelString: '# of Artists'
+          }
+        }]
+      },
+      responsive: true,
+      maintainAspectRatio: false
+    };
+  }
+
   function cleanPlaylistID(dirtyPlaylistID) {
     const playlistIndex = dirtyPlaylistID.indexOf('playlist/');
     if (playlistIndex === -1) {
@@ -114,7 +199,7 @@
     const questionIndex = dirtyPlaylistID.indexOf('?');
     const startIndex = playlistIndex + 9;
     const endIndex = questionIndex === -1 ? dirtyPlaylistID.length : questionIndex;
-    return dirtyPlaylistID.substring(startIndex, endIndex)
+    return dirtyPlaylistID.substring(startIndex, endIndex);
   }
 
   export default {
@@ -125,11 +210,13 @@
         showChart: false,
         showSpinner: false,
         scatterData: tempData,
-        chartOptions: getOptions('', '')
+        chartOptions: getScatterOptions('', ''),
+        barData: barData,
+        barOptions: getBarOptions()
       }
     },
     methods: {
-      createGraph: async function (options) {
+      createScatterGraph: async function (options) {
         this.showChart = false;
         this.showSpinner = true;
         this.errorMessage = '';
@@ -137,6 +224,8 @@
           // to make functional
           let response = await axios.get(
             "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + cleanPlaylistID(options.playlistId));
+
+
           let [labels, values] = createScatterArrays(response.data.tracks,
             options.xAxis,
             options.yAxis);
@@ -150,8 +239,9 @@
               backgroundColor: '#9a989f'
             }]
           };
+          let response2 = null;
           if (options.playlistId2 !== '') {
-            let response2 = await axios.get(
+            response2 = await axios.get(
               "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + cleanPlaylistID(options.playlistId2));
             let [labels2, values2] = createScatterArrays(response2.data.tracks,
               options.xAxis,
@@ -164,7 +254,10 @@
               backgroundColor: '#ff8b46'
             });
           }
-          this.chartOptions = getOptions(options.xAxis, options.yAxis);
+
+          this.barData = createBarChartData(response.data, response2 ? response2.data : null);
+
+          this.chartOptions = getScatterOptions(options.xAxis, options.yAxis);
           this.scatterData = chartData;
           setTimeout(() => {
             this.showSpinner = false;
@@ -175,12 +268,14 @@
           }, 500);
         }
         catch (e) {
+          console.log(e);
           this.errorMessage = "Problem finding playlist data";
           this.showSpinner = false;
         }
       },
     },
     components: {
+      'bar': Bar,
       'scatter': Scatter,
       'playlist-input': Input
     }
