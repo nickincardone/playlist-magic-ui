@@ -16,6 +16,7 @@
                                md-mode="indeterminate" style="margin: 40px;" id="spinner"></md-progress-spinner>
           <scatter v-if="showChart" :chart-data="scatterData" :options="chartOptions"/>
           <bar v-if="showChart" :chart-data="barData" :options="barOptions"/>
+          <bar v-if="showChart" :chart-data="dateData" :options="dateOptions"/>
           <div id="bottom-page"></div>
         </div>
       </div>
@@ -74,7 +75,7 @@
       datasets: [
         {
           label: playlist1.name,
-          backgroundColor: '#f87979',
+          backgroundColor: '#9a989f',
           data: data1
         }
       ]
@@ -99,10 +100,55 @@
 
     chartData.datasets.push({
       label: playlist2.name,
-      backgroundColor: '#f80979',
+      backgroundColor: '#ff8b46',
       data: data2
     });
     return chartData;
+  }
+
+  function createDateChartData(playlist1, playlist2) {
+    const dates1 = playlist1.years;
+    const labels = [];
+    const data1 = [];
+
+    Object.entries(dates1).forEach((date) => {
+      labels.push(date[0]);
+      data1.push(date[1]);
+    });
+
+    const dateData = {
+      labels: labels,
+      datasets: [
+        {
+          label: playlist1.name,
+          backgroundColor: '#9a989f',
+          data: data1
+        }
+      ]
+    };
+
+    if (!playlist2) return dateData;
+
+    const dates2 = playlist2.years;
+    const data2 = [];
+    labels.forEach((label) => {
+      data2.push(dates2[label] ? dates2[label] : 0);
+    });
+
+    Object.entries(dates1).forEach((date) => {
+      if (labels.indexOf(date[0]) !== -1) return;
+      labels.push(date[0]);
+      data1.push(0);
+      data2.push(date[1]);
+    });
+
+    dateData.datasets.push({
+      label: playlist2.name,
+      backgroundColor: '#ff8b46',
+      data: data2
+    });
+
+    return dateData;
   }
 
   function createScatterArrays(arr, xAxis, yAxis) {
@@ -191,6 +237,28 @@
     };
   }
 
+  function getDateOptions() {
+    return  {
+      scales: {
+        yAxes: [{
+          display: true,
+          ticks: {
+            min: 0
+          },
+          scaleLabel: {
+            display: true,
+            labelString: '# of Artists'
+          }
+        }],
+        xAxes: [{
+          type: "time",
+        }]
+      },
+      responsive: true,
+      maintainAspectRatio: false
+    };
+  }
+
   function cleanPlaylistID(dirtyPlaylistID) {
     const playlistIndex = dirtyPlaylistID.indexOf('playlist/');
     if (playlistIndex === -1) {
@@ -212,7 +280,9 @@
         scatterData: tempData,
         chartOptions: getScatterOptions('', ''),
         barData: barData,
-        barOptions: getBarOptions()
+        barOptions: getBarOptions(),
+        dateData: barData,
+        dateOptions: getDateOptions()
       }
     },
     methods: {
@@ -256,6 +326,8 @@
           }
 
           this.barData = createBarChartData(response.data, response2 ? response2.data : null);
+
+          this.dateData = createDateChartData(response.data, response2 ? response2.data : null);
 
           this.chartOptions = getScatterOptions(options.xAxis, options.yAxis);
           this.scatterData = chartData;
