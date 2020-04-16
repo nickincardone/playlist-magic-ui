@@ -55,7 +55,7 @@
         barData: {},
         barOptions: ChartHelper.getBarChartOptions(),
         dateData: {},
-        dateOptions: ChartHelper.getDateChartOptions(),
+        dateOptions: ChartHelper.getDateChartOptions([]),
         oldPlaylistId1 : '',
         response1: null,
         oldPlaylistId2 : '',
@@ -87,6 +87,7 @@
           this.chartOptions = ChartHelper.getScatterOptions(options.xAxis, options.yAxis);
           this.barData = ChartHelper.createBarChartData(this.response1.data, this.response2 ? this.response2.data : null);
           this.dateData = ChartHelper.createDateChartData(this.response1.data, this.response2 ? this.response2.data : null);
+          this.dateOptions = ChartHelper.getDateChartOptions(this.dateData.labels);
 
           setTimeout(() => {
             this.showSpinner = false;

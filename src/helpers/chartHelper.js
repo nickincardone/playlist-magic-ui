@@ -54,6 +54,7 @@ class ChartHelper {
     const dates1 = playlist1.years;
     const labels = [];
     const data1 = [];
+    //let minDate = '2015';
 
     Object.entries(dates1).forEach((date) => {
       labels.push(date[0]);
@@ -79,7 +80,7 @@ class ChartHelper {
       data2.push(dates2[label] ? dates2[label] : 0);
     });
 
-    Object.entries(dates1).forEach((date) => {
+    Object.entries(dates2).forEach((date) => {
       if (labels.indexOf(date[0]) !== -1) return;
       labels.push(date[0]);
       data1.push(0);
@@ -213,7 +214,15 @@ class ChartHelper {
     };
   };
 
-  static getDateChartOptions = () => {
+  static getDateChartOptions = (labels) => {
+    let min = 2015;
+    let max = 0;
+
+    labels.forEach((label) => {
+      if (parseInt(label) < min) min = parseInt(label);
+      if (parseInt(label) > max) max = parseInt(label);
+    });
+
     return  {
       scales: {
         yAxes: [{
@@ -228,6 +237,11 @@ class ChartHelper {
         }],
         xAxes: [{
           type: "time",
+          bounds: 'data',
+          ticks: {
+            max: '' + (max + 1),
+            min: '' + (min - 1)
+          }
         }]
       },
       responsive: true,
