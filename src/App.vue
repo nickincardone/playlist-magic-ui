@@ -55,7 +55,11 @@
         barData: {},
         barOptions: ChartHelper.getBarChartOptions(),
         dateData: {},
-        dateOptions: ChartHelper.getDateChartOptions()
+        dateOptions: ChartHelper.getDateChartOptions(),
+        oldPlaylistId1 : '',
+        response1: null,
+        oldPlaylistId2 : '',
+        response2: null,
       }
     },
     methods: {
@@ -64,19 +68,25 @@
         this.showSpinner = true;
         this.errorMessage = '';
         try {
-          const response = await axios.get(
-            "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + cleanPlaylistID(options.playlistId));
-          let response2 = null;
-          if (options.playlistId2 !== '') {
-            response2 = await axios.get(
+          if (options.playlistId !== this.oldPlaylistId1) {
+            this.response1 = await axios.get(
+              "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + cleanPlaylistID(options.playlistId));
+          }
+          this.oldPlaylistId1 = options.playlistId;
+
+          if (options.playlistId2 === '') {
+            this.response2 = null;
+          } else if (options.playlistId2 !== this.oldPlaylistId2) {
+            this.response2 = await axios.get(
               "http://node-express-env.eba-wrkpfpwj.us-east-2.elasticbeanstalk.com/data/" + cleanPlaylistID(options.playlistId2));
           }
+          this.oldPlaylistId2 = options.playlistId2;
 
-          this.scatterData = ChartHelper.createScatterGraphData(response.data,
-            response2 ? response2.data : null, options.xAxis, options.yAxis);
+          this.scatterData = ChartHelper.createScatterGraphData(this.response1.data,
+            this.response2 ? this.response2.data : null, options.xAxis, options.yAxis);
           this.chartOptions = ChartHelper.getScatterOptions(options.xAxis, options.yAxis);
-          this.barData = ChartHelper.createBarChartData(response.data, response2 ? response2.data : null);
-          this.dateData = ChartHelper.createDateChartData(response.data, response2 ? response2.data : null);
+          this.barData = ChartHelper.createBarChartData(this.response1.data, this.response2 ? this.response2.data : null);
+          this.dateData = ChartHelper.createDateChartData(this.response1.data, this.response2 ? this.response2.data : null);
 
           setTimeout(() => {
             this.showSpinner = false;
